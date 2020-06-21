@@ -16,40 +16,55 @@ Esta aplicación tiene tres pantallas principales: la pantalla principal, la de 
 ### Pantalla inicial
 
 Aquí se muestran el historial y la palabra del día:
-![Ejemplo de la pantalla principal](readme_img/Main.jpg)
+
+<p align="center">
+  <img src="readme_img/Main.jpg" height="550">
+</p>
 
 Si se pincha sobre la palabra del día, se realiza una petición para ver su definición.
 
 
 Para buscar una palabra, se puede usar la barra superior.
 A medida que se vaya escribiendo, se mostrarán las sugerencias de palabras recogidas en el diccionario que comiencen por lo que se haya escrito:
-![Sugerencias mientras se busca](readme_img/Suggestions.jpg)
+
+<p align="center">
+  <img src="readme_img/Suggestions.jpg" height="600">
+</p>
 
 
 ### Palabras guardadas
 
 En esta pantalla se muestran todas las palabras cuya definición se haya guardado en la BDD. Cuando se acceda a su definición (ya sea desde esta pantalla o desde la barra de búsqueda), no se creará ninguna petición a dle.rae.es, ahorrando tráfico de red.
 
-![Pantalla de palabras guardadas](readme_img/Saved_words.jpg)
+<p align="center">
+  <img src="readme_img/Saved_words.jpg" height="600">
+</p>
 
 
 
 ### Definición de una palabra
 
 Una vez se ha accedido a la definición de una palabra, se puede pinchar en cualquier palabra que no esté en color gris oscuro para buscar su definición:
-![Mensaje al pinchar sobre una palabra](readme_img/Search_word.jpg)
+
+<p align="center">
+  <img src="readme_img/Search_word.jpg" height="600">
+</p>
+
 
 
 ### Configuración
 
 En la pantalla de configuración se puede cambiar el tema (los colores de los temas oscuro y claro son los que vienen por defecto, porque soy terriblemente malo en la parte de diseño...), la cantidad de elementos que se deben guardar en el historial y algunas cosillas más:
-![Pantalla de configuración](readme_img/Settings.jpg)
+
+<p align="center">
+  <img src="readme_img/Settings.jpg" height="600">
+</p>
 
 
 
 ## Informar sobre un error
 
-Si has visto algún fallo, puedes [crear un _issue_ en Github](https://github.com/Foo-Manroot/da_rae/issues) o enviarme un correo a [mailto:foomanroot@disroot.org](foomanroot@disroot.org)
+Si has visto algún fallo, puedes [crear un _issue_ en Github](https://github.com/Foo-Manroot/da_rae/issues) o enviarme un correo a [foomanroot@disroot.org](mailto:foomanroot@disroot.org)
 
 
 Si quieres colaborar con el desarrollo, [cualquier aportación](https://github.com/Foo-Manroot/da_rae/pulls) es bienvenida :)
