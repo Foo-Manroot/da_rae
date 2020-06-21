@@ -1,0 +1,54 @@
+name: da_rae
+description: Diccionario Alternativo a la RAE
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^0.1.3
+
+
+  # Scraper for the word definitions
+  rae_scraper:
+    git:
+      url: git://github.com/Foo-Manroot/rae_scraper.git
+      ref: master
+
+  # Internationalization
+  flutter_localizations:
+    sdk: flutter
+  i18n_extension: ^1.3.6
+
+  # Persistence to disk
+  sqflite: ^1.3.0+2
+  path: ^1.7.0
+
+  logging: ^0.11.4
+
+  # AutoComplete TextField
+  flutter_typeahead: ^1.8.3
+
+  # To build the settings page
+  preferences: ^5.2.0
+
+  # To draw SVG icons
+  flutter_svg: ^0.18.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - resources/lib_icons/
