@@ -8,6 +8,11 @@ Toda la información se saca usando [este scraper](https://github.com/Foo-Manroo
 
 Principalmente, este proyecto lo he usado para aprender Flutter y Dart; así que habrá algunas cosas que estén programadas de una manera un tanto extraña, para poder explorar las capacidades de Flutter.
 
+## Descarga
+
+Puedes descargarte la aplicación ya compilada [desde aquí](https://github.com/Foo-Manroot/da_rae/releases/latest).
+Si no sabes cuál es la arquitectura de tu móvil (armeabi, arm64 ó x86_64), puedes probar con todas hasta que alguna se instale :D
+
 
 ## La aplicación
 
@@ -18,7 +23,7 @@ Esta aplicación tiene tres pantallas principales: la pantalla principal, la de 
 Aquí se muestran el historial y la palabra del día:
 
 <p align="center">
-  <img src="readme_img/Main.jpg" height="550">
+  <img src="readme_img/Main.jpg" width="300">
 </p>
 
 Si se pincha sobre la palabra del día, se realiza una petición para ver su definición.
@@ -28,7 +33,7 @@ Para buscar una palabra, se puede usar la barra superior.
 A medida que se vaya escribiendo, se mostrarán las sugerencias de palabras recogidas en el diccionario que comiencen por lo que se haya escrito:
 
 <p align="center">
-  <img src="readme_img/Suggestions.jpg" height="600">
+  <img src="readme_img/Suggestions.jpg" width="300">
 </p>
 
 
@@ -37,7 +42,7 @@ A medida que se vaya escribiendo, se mostrarán las sugerencias de palabras reco
 En esta pantalla se muestran todas las palabras cuya definición se haya guardado en la BDD. Cuando se acceda a su definición (ya sea desde esta pantalla o desde la barra de búsqueda), no se creará ninguna petición a dle.rae.es, ahorrando tráfico de red.
 
 <p align="center">
-  <img src="readme_img/Saved_words.jpg" height="600">
+  <img src="readme_img/Saved_words.jpg" width="300">
 </p>
 
 
@@ -47,7 +52,7 @@ En esta pantalla se muestran todas las palabras cuya definición se haya guardad
 Una vez se ha accedido a la definición de una palabra, se puede pinchar en cualquier palabra que no esté en color gris oscuro para buscar su definición:
 
 <p align="center">
-  <img src="readme_img/Search_word.jpg" height="600">
+  <img src="readme_img/Search_word.jpg" width="300">
 </p>
 
 
@@ -57,7 +62,7 @@ Una vez se ha accedido a la definición de una palabra, se puede pinchar en cual
 En la pantalla de configuración se puede cambiar el tema (los colores de los temas oscuro y claro son los que vienen por defecto, porque soy terriblemente malo en la parte de diseño...), la cantidad de elementos que se deben guardar en el historial y algunas cosillas más:
 
 <p align="center">
-  <img src="readme_img/Settings.jpg" height="600">
+  <img src="readme_img/Settings.jpg" width="300">
 </p>
 
 
