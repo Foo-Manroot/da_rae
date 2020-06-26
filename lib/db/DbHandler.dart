@@ -1,10 +1,14 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqflite/sqflite.dart';
 
 
 import 'StoredDefinition.dart';
 
 class DbHandler {
+
+    static final _log = Logger ("DbHandler.dart");
+
 
     /// Nombre de la base de datos utilizada
     static const String dbName = "saved_searches.sqlite";
@@ -38,6 +42,7 @@ class DbHandler {
     /// Crea las tablas por primera vez (se da por hecho que antes no existían)
     static void _createTables (Database db) {
 
+        _log.finer ("Creating tables on DB...");
         Batch batch = db.batch ();
 
         /* Tabla principal con las palabras guardadas */
@@ -57,12 +62,17 @@ class DbHandler {
         ''');
 
         batch.commit ();
+        _log.fine ("Created tables on DB");
     }
 
     /// Obtiene la única instancia permitida para conectar con la BDD.
     static Future<Database> get instance async {
 
+        _log.finer ("Getting an instance of DB");
+
         if (_instance == null) {
+
+            _log.finest ("No DB instance was found. Creating one...");
 
             String path = await getDatabasesPath ();
             _instance = openDatabase (
@@ -70,6 +80,8 @@ class DbHandler {
                 onCreate: (db, ver) => _createTables (db),
                 version: _version
             );
+
+            _log.finest ("DB instance created: $_instance");
         }
 
         return _instance;
@@ -87,22 +99,29 @@ class DbHandler {
     /// Se debe dar por hecho que siempre se tiene éxito guardando.
     static void saveDefinition (StoredDefinition def) {
 
+        _log.finer ("Saving definition of '${def.searchTerm}'");
+
         DbHandler.instance.then (
             (db) => db.insert (
                 tableSavedSearches,
                 def.toMap (),
                 conflictAlgorithm: ConflictAlgorithm.ignore
             )
+        ).whenComplete (
+            () => _log.fine ("Definition of '${def.searchTerm}' finished saving")
         );
 
         /* Aprovecha para guardarlo también en memoria */
         savedKeys.add (def.searchTerm);
+        _log.finer ("'${def.searchTerm}' added to savedKeys cache");
     }
 
     /// Elimina la entrada especificada, si existe.
     /// Devuelve [true] si la entrada se borró correctamente, o [false] si hubo algún
     /// problema o, directamente, esa entrada no existía.
     static Future<bool> deleteDefinition (String key) async {
+
+        _log.finer ("Deleting definition with key '$key'");
 
         Database db = await DbHandler.instance;
 
@@ -112,12 +131,15 @@ class DbHandler {
             whereArgs: [ key ]
         );
 
+        _log.finest ("Got this return value after deleting key '$key': $result");
+
         bool success = (result == 1);
 
         /* Aprovecha para eliminarlo también de memoria */
         if (success) {
 
             savedKeys.remove (key);
+            _log.finest ("Key '$key' successfully removed from savedKeys cache");
         }
 
         return success;
@@ -127,6 +149,8 @@ class DbHandler {
     /// si no se encontró.
     static Future<StoredDefinition> getDefinition (String key) async {
 
+        _log.finer ("Retrieving definition with key '$key'");
+
         Database db = await DbHandler.instance;
 
         List<Map<String, dynamic>> result = await db.query (
@@ -135,6 +159,9 @@ class DbHandler {
             whereArgs: [ key ]
         );
 
+        _log.finest ("Search with key '$key' returned ${result.length} elements: "
+            + "$result"
+        );
 
         return (result.length == 1)?
             StoredDefinition.fromMap (
@@ -149,6 +176,8 @@ class DbHandler {
     /// También actualiza [DbHandler.savedKeys]
     static Future<List<String>> listKeys () async {
 
+        _log.finer ("Retrieving all keys from DB");
+
         Database db = await DbHandler.instance;
 
         List<Map<String, dynamic>> results = await db.query (
@@ -156,9 +185,15 @@ class DbHandler {
             columns: [ "searchTerm" ]
         );
 
+        _log.finest ("Search for all keys returned ${results.length} elements: "
+            + "$results"
+        );
+
         savedKeys = List.generate (results.length,
             (i) { return results [i]["searchTerm"]; }
         );
+
+        _log.finer ("Updated savedKeys cache: $savedKeys");
         return savedKeys;
     }
 
@@ -173,9 +208,15 @@ class DbHandler {
     /// Se debe dar por hecho que siempre se tiene éxito guardando.
     static Future<void> addToHistory (String searchTerm) async {
 
+        _log.fine ("Adding '$searchTerm' to history.");
+
         /* No debería ser nunca negativo y, si lo fuera, creo que no pasaría nada; pero
         por si las moscas... */
         if (MAX_HISTORY < 0) {
+
+            _log.fine ("Cannot add '$searchTerm' to historty because MAX_HISTORY "
+                + "is less '$MAX_HISTORY'"
+            );
             return;
         }
 
@@ -185,11 +226,14 @@ class DbHandler {
             columns: [ "searchTerm", "timestamp" ]
         );
 
+        _log.fine ("There are already ${contents.length} elements in history");
+
         /* Si se ha superado el límite, se elimina el elemento más antiguo hasta
         volver a entrar en los límites (puede que se haya cambiado MAX_HISTORY_SIZE).
         Como la lista está ordenada, el más antiguo siempre será el último */
         if (contents.length >= MAX_HISTORY) {
 
+            _log.fine ("Reached MAX_HISTORY ($MAX_HISTORY) elements in history");
             contents.getRange (MAX_HISTORY, contents.length).forEach (
                 /* No hace falta hacer await porque, aunque se borre después de que se
                 haya insertado (o actualizado) el nuevo elemento, son operaciones
@@ -201,6 +245,8 @@ class DbHandler {
 
         /* No se quiere guardar nada en el historial */
         if (MAX_HISTORY == 0) {
+
+            _log.fine ("MAX_HISTORY is 0. Nothing will be saved in history.");
             return;
         }
 
@@ -220,6 +266,7 @@ class DbHandler {
             conflictAlgorithm: ConflictAlgorithm.replace
         );
 
+        _log.fine ("Added element with key '$searchTerm' to history");
     }
 
 
@@ -232,6 +279,7 @@ class DbHandler {
         {List<String> columns = const [ "searchTerm", "timestamp" ]}
     ) async {
 
+        _log.fine ("Retrieving history ordered by timestamp DESC");
         Database db = await DbHandler.instance;
 
         return await db.query (tableHistory, columns: columns, orderBy: "timestamp DESC");
@@ -243,6 +291,7 @@ class DbHandler {
     /// problema o, directamente, esa entrada no existía.
     static Future<bool> deleteFromHistory (String key) async {
 
+        _log.fine ("Deleting key '$key' from history");
         Database db = await DbHandler.instance;
 
         int result = await db.delete (
@@ -250,6 +299,8 @@ class DbHandler {
             where: "searchTerm = ?",
             whereArgs: [ key ]
         );
+
+        _log.finer ("db.delete() returned '$result'");
 
         return (result == 1);
     }
@@ -265,11 +316,14 @@ class DbHandler {
     ///
     static void dispose () {
 
+
         if (_instance != null) {
 
             _instance.then ((db) => db.close ());
+            _log.fine ("DB connection closed");
         }
 
         _instance = null;
+        _log.fine ("Instance disposed");
     }
 }

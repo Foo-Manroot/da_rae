@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:preferences/preferences.dart';
 import 'package:rae_scraper/rae_scraper.dart';
 
@@ -18,14 +19,22 @@ const int DEFAULT_CACHE_SIZE = 100;
 const String DEFAULT_LANG = "English";
 const String DEFAULT_THEME = "Dark";
 const bool DEFAULT_END_DRAWER = true;
+const String DEFAULT_LOG_LEVEL = "WARNING";
+
+final _log = Logger ("utils.dart");
 
 
 /// Obtiene el valor configurado para la internacionalización.
 Locale settingsGetLocale () {
 
+
     Locale initialLocale;
+    String localeStr = PrefService.get ("lang");
+
+    _log.info ("Configured locale: $localeStr");
+
     /* Cambia el idioma a uno de los implementados (por defecto, inglés) */
-    switch (PrefService.get ("lang")) {
+    switch (localeStr) {
 
         case "Español":
             initialLocale = Locale ("es");
@@ -37,6 +46,8 @@ Locale settingsGetLocale () {
             break;
     }
 
+    _log.fine ("Returned locale: $initialLocale");
+
     return initialLocale;
 }
 
@@ -45,14 +56,20 @@ ThemeData settingsGetTheme () {
 
     /* Por defecto, el tema es "dark" */
     ThemeData theme;
-    switch (PrefService.get ("ui_theme")) {
+    String themeStr = PrefService.get ("ui_theme");
+
+    _log.info ("Configured UI theme: $themeStr");
+
+    switch (themeStr) {
 
         case "Bright":
             theme = ThemeData.light ();
+            _log.fine ("Returned theme 'Light'");
             break;
 
         case "Dark":
         default:
+            _log.fine ("Returned theme 'Dark'");
             theme = ThemeData.dark ();
     }
 
@@ -63,17 +80,52 @@ ThemeData settingsGetTheme () {
 /// la derecha (endDrawer), o [false] si se debería poner a la izquierda.
 bool settingsIsEndDrawer () {
 
+    bool isEndDrawer = PrefService.getBool ("end_drawer")?? true;
+    _log.fine ("Configured 'end_drawer': $isEndDrawer");
+
     /* Por defecto, se pone a la derecha (endDrawer) */
-    return PrefService.getBool ("end_drawer")?? true;
+    return isEndDrawer;
 }
 
+/// Obtiene la configuración y devuelve el [Level] configurado para el logger.
+Level settingsGetLogLevel () {
 
+    String config = PrefService.getString ("log_level");
+
+    _log.fine ("Configured log level: $config");
+
+    Level configLevel;
+    Level defaultLevel = Level.WARNING;
+
+    if (config != null) {
+
+        for (Level l in Level.LEVELS) {
+
+            if (l.name == config) {
+
+                configLevel = l;
+                _log.finer ("Found matching Level: $l");
+                break;
+            }
+        }
+
+    }
+
+    Level l = configLevel?? defaultLevel;
+
+    _log.fine ("Returning level $l");
+    return l;
+}
+
+/* ====== */
 
 /// Cambia el tamaño de la caché del scraper
 void setCacheSize (int newVal) {
 
     /* No debería tener un valor negativo; pero por si acaso... */
+    _log.info ("Previous cache max: ${ScraperSingleton.instance.MAX_CACHE_SIZE}");
     ScraperSingleton.instance.MAX_CACHE_SIZE = (newVal < 0)? DEFAULT_CACHE_SIZE : newVal;
+    _log.info ("New cache max: ${ScraperSingleton.instance.MAX_CACHE_SIZE}");
 }
 
 
@@ -81,7 +133,27 @@ void setCacheSize (int newVal) {
 void setHistSize (int newVal) {
 
     /* No debería tener un valor negativo; pero por si acaso... */
+    _log.info ("Previous max history: ${DbHandler.MAX_HISTORY}");
     DbHandler.MAX_HISTORY = (newVal < 0)? DEFAULT_HIST_SIZE : newVal;
+    _log.info ("New max history: ${DbHandler.MAX_HISTORY}");
+}
+
+/// Cambia el nivel de detalle del log
+void setLogLevel (String newVal) {
+
+    /* Si no es un nivel aceptado, se deja el que estaba */
+    Level newLevel = Logger.root.level;
+
+    for (Level l in Level.LEVELS) {
+
+        if (l.name == newVal) {
+
+            newLevel = l;
+            break;
+        }
+    }
+
+    Logger.root.level = newLevel;
 }
 
 
@@ -96,6 +168,10 @@ void setHistSize (int newVal) {
 /// [afterSearch] es una función a ejecutar al volver de [Definition].
 ///
 void _searchWord (BuildContext ctx, Palabra word, { Function afterSearch }) async {
+
+    _log.finer ("Searching for word '$word' with afterSearch function: "
+        + "$afterSearch"
+    );
 
     if (afterSearch == null) {
         afterSearch = () {};
@@ -158,6 +234,10 @@ TextSpan selectableWord (Palabra word, BuildContext ctx,
     { TextStyle style, String actionText, Function afterSearch }
 ) {
 
+    _log.finest ("Creating widget [selectableWord] for word: '$word', "
+        + "actionText '$actionText' and afterSearch = '$afterSearch'"
+    );
+
     if (afterSearch == null) {
         afterSearch = () {};
     }
@@ -165,6 +245,8 @@ TextSpan selectableWord (Palabra word, BuildContext ctx,
 
     /* Si no tiene ningún enlace, se muestra la palabra sin más */
     if (word.enlaceRecurso == null) {
+
+        _log.finest ("The word '$word' has no [enlaceRecurso]");
 
         return TextSpan (
             text: word.texto,
@@ -174,6 +256,7 @@ TextSpan selectableWord (Palabra word, BuildContext ctx,
         );
     }
 
+    _log.finest ("The word '$word' has [enlaceRecurso]: ${word.enlaceRecurso}");
 
     return TextSpan (
         text: word.texto,
@@ -213,6 +296,9 @@ TextSpan selectableWord (Palabra word, BuildContext ctx,
 /// Salta un pop-up informando del error concreto
 void _showErrordialog (Exception ex, BuildContext ctx) {
 
+    _log.fine ("Showing error dialog for exception.");
+    _log.severe (ex);
+
     showDialog (
         context: ctx,
         barrierDismissible: false,
@@ -251,6 +337,10 @@ Future<Map<String, dynamic>> searchDefinition (
     @required BuildContext context}
 ) async {
 
+    _log.finest ("Searching definition with searchTerm = '$searchTerm' and "
+        + "searchWord = '$searchWord'"
+    );
+
     if (searchWord != null) {
 
         /* Chapuza cutriplus para lidiar con la palabra del día */
@@ -259,6 +349,8 @@ Future<Map<String, dynamic>> searchDefinition (
             &&
             searchWord.enlaceRecurso.contains ("?m=wotd")
         ) {
+
+            _log.finest ("Taken modification path to search for word of the day.");
 
             Uri uri = Uri.parse (searchWord.enlaceRecurso);
             searchWord = null;
@@ -272,8 +364,12 @@ Future<Map<String, dynamic>> searchDefinition (
         }
     }
 
+    _log.fine ("Search term: $searchTerm");
+
     /* [savedKeys] debería estar inicializada y actualizada */
     if (DbHandler.savedKeys.contains (searchTerm)) {
+
+        _log.info ("Search term '$searchTerm' found in DB cache (savedKeys)");
 
         String jsonRes = (
             await DbHandler.getDefinition (searchTerm)
@@ -293,11 +389,13 @@ Future<Map<String, dynamic>> searchDefinition (
 
         if (searchWord != null) {
 
+            _log.finest ("Taken 'searchWord != null' path");
+
             /* Se realiza la petición al enlace directo, que es más rápido */
             return {
                 "result": searchWord.obtenerDef (
                     ScraperSingleton.instance,
-                    manejadorError: (err) => print ("ERROR => $err"),
+                    manejadorError: (err) => _log.severe (err),
                     manejadorExcepc: (e) => _showErrordialog (e, context)
                 ),
                 "saved": false,
@@ -305,6 +403,8 @@ Future<Map<String, dynamic>> searchDefinition (
             };
 
         } else {
+
+            _log.finest ("Taken 'searchWord == null' path");
 
             if (searchTerm == null) {
 
@@ -315,7 +415,7 @@ Future<Map<String, dynamic>> searchDefinition (
             return {
                 "result": ScraperSingleton.instance.obtenerDef (
                     searchTerm,
-                    manejadorError: (err) => print ("ERROR => $err"),
+                    manejadorError: (err) => _log.severe (err),
                     manejadorExcepc: (e) => _showErrordialog (e, context)
                 ),
                 "saved": false,

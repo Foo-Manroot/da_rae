@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 import 'package:rae_scraper/rae_scraper.dart';
 
@@ -14,6 +15,8 @@ import '../widgets/DrawerContent.dart';
 class Definition extends StatefulWidget {
 
     Definition ({Key key}) : super(key: key);
+
+    final _log = Logger ("Definition.dart");
 
     @override
     DefinitionState createState () => DefinitionState ();
@@ -37,6 +40,7 @@ class DefinitionState extends State<Definition> {
         List<TextSpan> words = [ ];
 
         for (Palabra word in info.palabras) {
+
             words.add (
                 utils.selectableWord (
                     word,
@@ -205,6 +209,9 @@ class DefinitionState extends State<Definition> {
                     List<Widget> children = [];
 
                     if (snapshot.hasData) {
+
+                        widget._log.info ("AsyncSnapshot returned data");
+
                         /* Los datos ya están disponibles. Primero se inicia el guardado
                         en el historial. Como es una operación asíncrona y no importa su
                         resultado (se da por hecho que siempre se inserta con éxito), se
@@ -291,6 +298,7 @@ class DefinitionState extends State<Definition> {
 
                     } else if (snapshot.hasError) {
                         /* Hubo un error */
+                        widget._log.severe ("AsyncSnapshot error: ${snapshot.error}");
                         children = <Widget>[
                             Icon (
                                 Icons.error_outline,
@@ -307,6 +315,8 @@ class DefinitionState extends State<Definition> {
 
 
                         if (snapshot.connectionState == ConnectionState.done) {
+
+                            widget._log.severe ("No data retrieved from AsyncSnapshot");
                             /* Terminó de cargar, pero no tiene datos (devolvió null) */
                             children = <Widget>[
                                 Icon (
@@ -328,9 +338,9 @@ class DefinitionState extends State<Definition> {
                                     width: 60,
                                     height: 60,
                                 ),
-                                const Padding (
+                                Padding (
                                     padding: EdgeInsets.only (top: 16.0),
-                                    child: Text ("Buscando..."),
+                                    child: Text ("Buscando...".i18n),
                                 )
                             ];
                         }
@@ -365,7 +375,7 @@ class DefinitionState extends State<Definition> {
 
             /* Elimina la entrada */
             success = await DbHandler.deleteDefinition (_searchTerm);
-
+            widget._log.info ("Result deleted: $success");
 
         } else {
 
@@ -376,6 +386,7 @@ class DefinitionState extends State<Definition> {
                     StoredDefinition (searchTerm: _searchTerm, result: r)
             );
             success = true;
+            widget._log.info ("Result saved: $success");
         }
 
         /* Actualiza el estado para que se dibuje el nuevo valor del icono (si es que se
@@ -388,6 +399,8 @@ class DefinitionState extends State<Definition> {
     Widget build (BuildContext ctx) {
 
         Map<String, dynamic> args = ModalRoute.of (ctx).settings.arguments;
+
+        widget._log.finer ("Args: $args");
 
         Future<Resultado> def = args ["result"];
         /* Es posible que _saved haya cambiado como consecuencia de un [setState()] */

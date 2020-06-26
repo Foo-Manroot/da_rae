@@ -257,6 +257,11 @@ extension Localization on String {
             "es": "Este paquete permite mostrar los recursos SVG como los símbolos que hay en esta lista a la izquierda 😉",
             "en": "This package shows SVG resources, like the symbols at the left on this list 😉"
         }
+        +
+        {
+            "es": "Nivel de detalle en el log",
+            "en": "Log level"
+        }
     ;
 
     String get i18n => localize (this, _t);

@@ -16,14 +16,15 @@ import 'utils.dart' as utils;
 
 const String APP_VERSION = "1.0.0";
 
+final _log = Logger ("main.dart");
+
 void main () async {
 
     /* This configuration affects all the logging instances (especially, the logging from
     rae_scraper) */
-    Logger.root.level = Level.WARNING;
-    Logger.root.onRecord.listen((record) {
-        print ("${record.level.name} @ ${record.loggerName}: "
-            + "${record.time}: ${record.message}"
+    Logger.root.onRecord.listen ((record) {
+        print ("${record.level.name} \t- ${record.loggerName}\t "
+            + "@${record.time}: ${record.message}"
         );
     });
 
@@ -31,6 +32,9 @@ void main () async {
     await PrefService.init ();
     initSettings ();
 
+    Logger.root.level = utils.settingsGetLogLevel ();
+
+    _log.fine ("Settings initialization completed. Running app...");
     runApp (App ());
 }
 
@@ -112,12 +116,15 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         super.initState ();
         WidgetsBinding.instance.addObserver (this);
         DbHandler.init ();
+
+        _log.fine ("Main screen initialized");
     }
 
 
     @override
     void didChangeAppLifecycleState (AppLifecycleState state) {
 
+        _log.finest ("Changed app state to $state");
         /* Por ejemplo: dejarla en segundo plano. No hace falta mantener las conexiones
         abiertas */
         if (state == AppLifecycleState.detached) {
@@ -132,7 +139,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     @override
     void dispose () {
 
-        print ("\n ================ Dispose =============== \n");
+        _log.finest ("================ Dispose of Main Widget ===============");
 
         ScraperSingleton.dispose ();
         DbHandler.dispose ();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 import '../db/DbHandler.dart';
 import '../db/StoredDefinition.dart';
@@ -10,6 +11,8 @@ import '../widgets/DrawerContent.dart';
 class Saved extends StatefulWidget {
 
     Saved ({Key key}) : super(key: key);
+
+    final _log = Logger ("Saved.dart");
 
     @override
     SavedState createState () => SavedState ();
@@ -24,9 +27,11 @@ class SavedState extends State<Saved> {
 
         /* Primero guarda la entrada en memoria por si se quiere deshacer la acción */
         StoredDefinition temp = await DbHandler.getDefinition (searchTerm);
+        widget._log.fine ("Saved temp result for key '$searchTerm'");
 
         /* Elimina la entrada */
         bool success = await DbHandler.deleteDefinition (searchTerm);
+        widget._log.fine ("Removed entry: $success");
 
         /* No lo ha conseguido => muestra un SnackBar indicando el error y sale */
         if ( ! success) {
@@ -52,6 +57,7 @@ class SavedState extends State<Saved> {
                     onPressed: () async {
 
                         DbHandler.saveDefinition (temp);
+                        widget._log.fine ("Restored entry for searchTerm '$searchTerm'");
 
                         /* Se debe dar por hecho que siempre se tiene éxito al guardar.
                         Se llama a [setState()] para que se actualice la lista */
@@ -97,10 +103,14 @@ class SavedState extends State<Saved> {
 
                     if (snapshot.hasData) {
 
+                        widget._log.info ("AsyncSnapshot returned data");
+
                         /* Ordena los elementos de manera alfabética */
                         snapshot.data.sort (
                             (a, b) => a.toLowerCase ().compareTo (b.toLowerCase ())
                         );
+
+                        widget._log.fine ("Sorted keys: ${snapshot.data}");
 
                         /* Los datos ya están disponibles */
                         for (String searchTerm in snapshot.data) {
@@ -156,6 +166,8 @@ class SavedState extends State<Saved> {
 
                     } else if (snapshot.hasError) {
                         /* Hubo un error */
+                        widget._log.severe ("AsyncSnapshot error: ${snapshot.error}");
+
                         children = <Widget>[
                             Icon (
                                 Icons.error_outline,
@@ -201,6 +213,7 @@ class SavedState extends State<Saved> {
     Widget build (BuildContext ctx) {
 
         Future<List<String>> arg = DbHandler.listKeys ();
+        widget._log.finer ("Args: $arg");
 
         return Scaffold (
             appBar: AppBar (

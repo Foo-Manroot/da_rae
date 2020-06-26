@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import '../ScraperSingleton.dart';
@@ -21,6 +22,8 @@ class SearchBar extends StatefulWidget implements PreferredSizeWidget {
     /// Función a ejecutar al volver de [Definition]
     final Function afterSearch;
 
+    final _log = Logger ("SearchBar.dart");
+
     @override
     _SearchBar createState () => _SearchBar ();
 }
@@ -38,7 +41,10 @@ class _SearchBar extends State<SearchBar> {
     ///
     void _search (BuildContext ctx, String text) async {
 
+
         if (text != "" ) {
+
+            widget._log.fine ("Searching text '$text'");
 
             Navigator.of (ctx).pushNamed (
                 "/search",
@@ -107,6 +113,8 @@ class _SearchBar extends State<SearchBar> {
 
         _searchController.dispose ();
         super.dispose ();
+
+        widget._log.info ("Disposed SearchBar widget: ${this.hashCode}");
     }
 }
 

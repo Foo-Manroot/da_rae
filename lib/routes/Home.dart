@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:rae_scraper/rae_scraper.dart';
 
 import '../ScraperSingleton.dart';
@@ -14,6 +15,8 @@ class HomePage extends StatefulWidget {
 
     HomePage ({Key key}) : super(key: key);
 
+    final _log = Logger ("Home.dart");
+
     @override
     HomePageState createState () => HomePageState ();
 }
@@ -27,6 +30,8 @@ class HomePageState extends State<HomePage> {
 
         /* Elimina la entrada */
         bool success = await DbHandler.deleteFromHistory (key);
+
+        widget._log.info ("Entry deleted from history: $success");
 
         /* No lo ha conseguido => muestra un SnackBar indicando el error y sale */
         if ( ! success) {
@@ -53,6 +58,8 @@ class HomePageState extends State<HomePage> {
 
     /// Redirecciona a [Definition] para mostrar la definición
     Future<void> _sowHistoryEntry (BuildContext ctx, String searchTerm) async {
+
+        widget._log.fine ("Showing history entry: $searchTerm");
 
         Navigator.of (ctx).pushNamed (
             "/search",
