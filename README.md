@@ -79,6 +79,11 @@ Si quieres colaborar con el desarrollo, [cualquier aportación](https://github.c
 ## Compilar
 
 Debes tener instalado el SDK de [flutter](https://flutter.dev/docs/get-started/install) en tu ordenador.
+Como yo usé la rama `master`, es posible que flutter devuelva un error de dependencias.
+Si es así, puedes cambiar de rama ejecutando:
+```sh
+flutter channel master && flutter upgrade
+```
 
 Desde el directorio raíz, ejecuta
 ```sh
@@ -92,3 +97,6 @@ Si prefieres crear una versión para distribuir, ejecuta:
 ```sh
 flutter build apk --shrink --release --split-per-abi
 ```
+
+
+Compilar para iOS es un infierno y no tengo ni idea de cómo hacerlo, sobre todo porque no tengo un Mac ni un iPhone...
