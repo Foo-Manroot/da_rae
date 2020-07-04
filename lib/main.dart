@@ -23,7 +23,7 @@ void main () async {
     /* This configuration affects all the logging instances (especially, the logging from
     rae_scraper) */
     Logger.root.onRecord.listen ((record) {
-        print ("${record.level.name} \t- ${record.loggerName}\t "
+        print ("${record.level.name.padRight (9)} - ${record.loggerName.padRight (23)}"
             + "@${record.time}: ${record.message}"
         );
     });
