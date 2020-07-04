@@ -234,7 +234,7 @@ class DbHandler {
         if (contents.length >= MAX_HISTORY) {
 
             _log.fine ("Reached MAX_HISTORY ($MAX_HISTORY) elements in history");
-            contents.getRange (MAX_HISTORY, contents.length).forEach (
+            contents.getRange (MAX_HISTORY - 1, contents.length).forEach (
                 /* No hace falta hacer await porque, aunque se borre después de que se
                 haya insertado (o actualizado) el nuevo elemento, son operaciones
                 independientes y el resultado es el mismo (que no se supere
