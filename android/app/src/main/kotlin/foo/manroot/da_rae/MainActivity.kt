@@ -1,4 +1,4 @@
-package foo.manroot.diccionario_rae
+package foo.manroot.da_rae
 
 import io.flutter.embedding.android.FlutterActivity
 
