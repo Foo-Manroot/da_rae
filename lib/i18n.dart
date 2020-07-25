@@ -262,6 +262,16 @@ extension Localization on String {
             "es": "Nivel de detalle en el log",
             "en": "Log level"
         }
+        +
+        {
+           "es": "Conjugación del verbo '%s'",
+           "en": "Verb conjugation of '%s'"
+        }
+        +
+        {
+            "es": "Formas no personales",
+            "en": "Non-personal verb forms"
+        }
     ;
 
     String get i18n => localize (this, _t);

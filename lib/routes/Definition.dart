@@ -193,6 +193,226 @@ class DefinitionState extends State<Definition> {
     }
 
 
+    ///
+    /// Devuelve una tabla donde se presenta la conjugación del tiempo verbal
+    /// especificado
+    ///
+    Widget _makeTiempoVerbal (TiempoVerbal t, BuildContext ctx) {
+
+
+        List<TableRow> rows = [];
+
+        /* Añade una persona perteneciente al tiempo verbal actual */
+        Function addRow = (pronoun, conjugation) => rows.add (
+            TableRow (
+                children: <Widget>[
+                    Text (pronoun),
+                    Text (conjugation)
+                ]
+            ),
+        );
+        /* Añade una división entre las personas del discurso */
+        Function addDivider = ([thickness = 0.75]) => rows.add (
+            TableRow (
+                children: <Widget>[
+                    Divider (
+                        indent: 5.0,
+                        endIndent: 30.0,
+                        thickness: thickness,
+                        color: thickness > 1.0? Theme.of (ctx).accentColor : null
+                    ),
+                    /* Hace falta tener dos elementos no nulos, o no se puede dibujar */
+                    (thickness > 1.0?
+                        Divider (
+                            indent: 5.0,
+                            endIndent: 30.0,
+                            thickness: thickness,
+                            color: Theme.of (ctx).accentColor
+                        )
+                        :  Container ()
+                    )
+                ]
+            )
+        );
+
+
+        /* Singular */
+        if (t.sing_prim != null) {
+            addRow ("Yo", t.sing_prim);
+            addDivider ();
+        }
+        addRow ("Tú / vos", t.sing_seg [0]);
+        addRow ("Usted", t.sing_seg [1]);
+        if (t.sing_terc != null) {
+            addDivider ();
+            addRow ("Ella / él", t.sing_terc);
+        }
+
+        addDivider (1.5);
+
+        /* Plural */
+        if (t.plural_prim != null) {
+            addRow ("Nosotras / nosotros", t.plural_prim);
+            addDivider ();
+        }
+        addRow ("Vosotras / vosotros", t.plural_seg [0]);
+        addRow ("Ustedes", t.plural_seg [1]);
+        if (t.plural_terc != null) {
+            addDivider ();
+            addRow ("Ellas / ellos", t.plural_terc);
+        }
+
+
+        return Container (
+            width: double.infinity,
+            child: Column (
+                children: [
+                    Padding (
+                        padding: const EdgeInsets.all (10.0),
+                        child: Text (
+                            "> ${t.nombre.capitalize ()} < ",
+                            style: Theme.of (ctx).textTheme.bodyText1
+                        )
+                    ),
+                    Card (
+                        color: Theme.of (ctx).highlightColor,
+                        margin: const EdgeInsets.all (5.0),
+                        child: Padding (
+                            padding: const EdgeInsets.all (10.0),
+                            child: Table (
+                                children: rows
+                            )
+                        )
+                    )
+                ]
+            )
+        );
+    }
+
+
+    ///
+    /// Crea los elementos necesarios para mostrar un elemento [Conjug] por pantalla.
+    ///
+    Widget _createConjug (Conjug conjugation, BuildContext ctx) {
+
+        List<Widget> entries = [];
+
+        /* Cabecera para indicar que a continuación viene la conjugación */
+        entries.add (
+            Padding (
+                padding: const EdgeInsets.all (10.0),
+                child: Text (
+                    "Conjugación del verbo '%s'".fill ([conjugation.infinitivo]),
+                    style: Theme.of (ctx).textTheme.headline5
+                )
+            )
+        );
+
+        /* Formas no personales */
+        entries.add (Divider ());
+        entries.add (
+            Padding (
+                padding: const EdgeInsets.all (10.0),
+                child: Text (
+                    "Formas no personales".i18n,
+                    style: Theme.of (ctx).textTheme.headline6
+                )
+            )
+        );
+
+        /* Infinitivo, Gerundio y Participio */
+        entries.add (
+            Container (
+                width: double.infinity,
+                child: Card (
+                    color: Theme.of (ctx).highlightColor,
+                    margin: const EdgeInsets.all (5.0),
+                    child: Padding (
+                        padding: const EdgeInsets.all (10.0),
+                        child: Table (
+                            children: <TableRow>[
+                                TableRow (
+                                    children: <Widget>[
+                                        Text ("Infinitivo"),
+                                        Text (conjugation.infinitivo)
+                                    ]
+                                ),
+                                TableRow (
+                                    children: <Widget>[
+                                        Text ("Participio"),
+                                        Text (conjugation.participio)
+                                    ]
+                                ),
+                                TableRow (
+                                    children: <Widget>[
+                                        Text ("Gerundio"),
+                                        Text (conjugation.gerundio)
+                                    ]
+                                )
+                            ]
+                        )
+                    )
+                )
+            )
+        );
+
+        /* ========== */
+        /* Indicativo */
+        entries.add (Divider ());
+        entries.add (
+            Padding (
+                padding: const EdgeInsets.all (10.0),
+                child: Text ("Indicativo", style: Theme.of (ctx).textTheme.headline6)
+            )
+        );
+
+        entries.add (_makeTiempoVerbal (conjugation.indicativo.presente, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.indicativo.pret_imperf, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.indicativo.pret_perf_simple, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.indicativo.futuro, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.indicativo.condicional, ctx));
+
+
+        /* ========== */
+        /* Subjuntivo */
+        entries.add (Divider ());
+        entries.add (
+            Padding (
+                padding: const EdgeInsets.all (10.0),
+                child: Text ("Subjuntivo", style: Theme.of (ctx).textTheme.headline6)
+            )
+        );
+
+        entries.add (_makeTiempoVerbal (conjugation.subjuntivo.presente, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.subjuntivo.futuro, ctx));
+        entries.add (_makeTiempoVerbal (conjugation.subjuntivo.pret_imperf, ctx));
+
+        /* ========== */
+        /* Imperativo */
+        entries.add (Divider ());
+        entries.add (
+            Padding (
+                padding: const EdgeInsets.all (10.0),
+                child: Text ("Imperativo", style: Theme.of (ctx).textTheme.headline6)
+            )
+        );
+
+        entries.add (_makeTiempoVerbal (conjugation.imperativo.presente, ctx));
+
+
+
+        return Container (
+            width: double.infinity,
+            margin: const EdgeInsets.all (5.0),
+            child: Card (
+                color: Theme.of (ctx).highlightColor,
+                margin: const EdgeInsets.all (5.0),
+                child: Column (
+                    children: entries
+                )
+            )
+        );
+    }
 
 
     ///
@@ -211,14 +431,15 @@ class DefinitionState extends State<Definition> {
                     if (snapshot.hasData) {
 
                         widget._log.info ("AsyncSnapshot returned data");
+                        Resultado result = snapshot.data;
 
                         /* Los datos ya están disponibles. Primero se inicia el guardado
                         en el historial. Como es una operación asíncrona y no importa su
                         resultado (se da por hecho que siempre se inserta con éxito), se
                         lanza y no se espera a que termine. */
-                        DbHandler.addToHistory (snapshot.data.palabra.texto);
+                        DbHandler.addToHistory (result.palabra.texto);
 
-                        for (Entrada e in snapshot.data.entradas) {
+                        for (Entrada e in result.entradas) {
 
                             List<Widget> defs = <Widget>[];
 
@@ -284,6 +505,7 @@ class DefinitionState extends State<Definition> {
                                             )
                                        );
                                 }
+
                             }
 
                             defs.add (Divider ());
@@ -294,6 +516,12 @@ class DefinitionState extends State<Definition> {
                             );
 
                             children.add (dictEntry);
+                        }
+
+                        /* Si se trata de un verbo, añade su cnjugación al final */
+                        if (result.conjug != null) {
+
+                            children.add (this._createConjug (result.conjug, ctx));
                         }
 
                     } else if (snapshot.hasError) {
