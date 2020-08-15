@@ -264,8 +264,8 @@ extension Localization on String {
         }
         +
         {
-           "es": "Conjugación del verbo '%s'",
-           "en": "Verb conjugation of '%s'"
+           "es": "Conjugación",
+           "en": "Conjugation"
         }
         +
         {
