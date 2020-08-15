@@ -13,11 +13,18 @@ class SearchBar extends StatefulWidget implements PreferredSizeWidget {
     ///
     /// El parámetro [afterSearch] es una función a la que llamar cuando se vuelva
     /// de [Definition].
-    SearchBar ({Key key, this.afterSearch }) : super(key: key);
+    SearchBar ({Key key, this.bottom, this.afterSearch })
+        /* https://github.com/flutter/flutter/blob/e2610a450c5c4aa41db01dae5dc0f4be6cd53aff/packages/flutter/lib/src/material/app_bar.dart#L206 */
+        : this.preferredSize = Size.fromHeight (
+                kToolbarHeight + (bottom?.preferredSize?.height ?? 0.0)
+            ),
+            super (key: key)
+    ;
 
-    /// Taken from
-    /// https://github.com/flutter/flutter/blob/e2610a450c5c4aa41db01dae5dc0f4be6cd53aff/packages/flutter/lib/src/material/app_bar.dart#L206
-    final Size preferredSize = Size.fromHeight (kToolbarHeight + 2.0);
+    final PreferredSizeWidget bottom;
+
+    final Size preferredSize;
+
 
     /// Función a ejecutar al volver de [Definition]
     final Function afterSearch;
@@ -102,7 +109,8 @@ class _SearchBar extends State<SearchBar> {
                     noItemsFoundBuilder: (ctx) => null,
                 ),
             ),
-            actions: actions
+            actions: actions,
+            bottom: this.widget.bottom
         );
     }
 
