@@ -14,7 +14,7 @@ import 'ScraperSingleton.dart';
 import 'db/DbHandler.dart';
 import 'utils.dart' as utils;
 
-const String APP_VERSION = "1.0.0";
+const String APP_VERSION = "1.1.0";
 
 final _log = Logger ("main.dart");
 
