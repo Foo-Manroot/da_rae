@@ -213,53 +213,54 @@ class HomePageState extends State<HomePage> {
                             /* Simplemente es un texto con la palabra guardada. La
                             definición se cargará sólo si se pincha en ella */
 
-                            Widget item = SlideMenu(
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                elevation: 10,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                     ListTile(
-                                       leading: Icon (Icons.book),
-                                       title: Text(
-                                           searchTerm.capitalize(),
-                                           style: Theme.of(ctx).textTheme.headline5),
-                                       subtitle: Text(
-                                           DateTime.fromMillisecondsSinceEpoch(timestamp).toString()
-                                       ),
-                                     ),
-                                  ],
-                                ),
-                              ),
-                              menuItems: <Widget>[
-                                new Container(
-                                  height: 72,
-                                  color: Colors.red,
-                                  child: new IconButton(
-                                    icon: new Icon(Icons.delete),
-                                    onPressed: () => _deleteHistoryItem (
-                                        ctx,
-                                        searchTerm
-                                    ),
-                                  ),
-                                ),
-                                new Container(
-                                  height: 80,
-                                  color: Colors.blueAccent,
-                                  child: new IconButton(
-                                    icon: new Icon(Icons.info),
-                                    onPressed: () => _showHistoryEntry (
-                                        ctx,
-                                        searchTerm
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Widget item = Card (
+                                child: Column (
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                        ListTile (
+                                            leading: Icon (Icons.book),
+                                            title: Text (
+                                                searchTerm.capitalize (),
+                                                style: Theme.of (ctx).textTheme.headline5
+                                            ),
+                                            subtitle: Text (
+                                                DateTime.fromMillisecondsSinceEpoch (
+                                                    timestamp
+                                                ).toString ()
+                                            )
+                                        ),
+                                        ButtonBar (
+                                            children: <Widget>[
+                                                /* Botón para ver la definición */
+                                                FlatButton (
+                                                    child: Text (
+                                                        "Ver definición"
+                                                            .i18n
+                                                            .toUpperCase ()
+                                                    ),
+                                                    onPressed: () => _showHistoryEntry (
+                                                        ctx,
+                                                        searchTerm
+                                                    )
+                                                ),
+                                                /* Botón para eliminar de la BDD */
+                                                FlatButton (
+                                                    child: Text (
+                                                        "Eliminar"
+                                                            .i18n
+                                                            .toUpperCase ()
+                                                    ),
+                                                    onPressed: () => _deleteHistoryItem (
+                                                        ctx,
+                                                        searchTerm
+                                                    )
+                                                )
+                                            ],
+                                            buttonTextTheme: ButtonTextTheme.accent
+                                        )
+                                    ]
+                                )
                             );
-
                             children.add (item);
                             children.add (Divider ());
                         }
