@@ -302,7 +302,7 @@ class DefinitionState extends State<Definition> {
             Padding (
                 padding: const EdgeInsets.all (10.0),
                 child: Text (
-                    "Conjugación del verbo '%s'".fill ([conjugation.infinitivo]),
+                    "...",
                     style: Theme.of (ctx).textTheme.headline5
                 )
             )
@@ -418,13 +418,14 @@ class DefinitionState extends State<Definition> {
     ///
     /// Obtiene las entradas correspondientes a la definición de la palabra especificada
     ///
-    List<Widget> _getEntries (Future<Resultado> definition) => <Widget>[
+    List<Widget> _getEntries (Future<Resultado> definition, bool isDef) => <Widget>[
         Padding (
             padding: const EdgeInsets.all (5.0),
             child: FutureBuilder <Resultado>(
-                future: definition
+                future: definition,
+
                 /* Manejador para añadir el resultado cuando esté disponible */
-                , builder: (BuildContext ctx, AsyncSnapshot<Resultado> snapshot) {
+                builder: (BuildContext ctx, AsyncSnapshot<Resultado> snapshot) {
 
                     List<Widget> children = [];
 
@@ -433,36 +434,38 @@ class DefinitionState extends State<Definition> {
                         widget._log.info ("AsyncSnapshot returned data");
                         Resultado result = snapshot.data;
 
-                        /* Los datos ya están disponibles. Primero se inicia el guardado
+                        // Solo agrega la parte de la definicion, si no me equivoco xD
+                        if(isDef) {
+                          /* Los datos ya están disponibles. Primero se inicia el guardado
                         en el historial. Como es una operación asíncrona y no importa su
                         resultado (se da por hecho que siempre se inserta con éxito), se
                         lanza y no se espera a que termine. */
-                        DbHandler.addToHistory (result.palabra.texto);
+                          DbHandler.addToHistory(result.palabra.texto);
 
-                        for (Entrada e in result.entradas) {
-
+                          for (Entrada e in result.entradas) {
                             List<Widget> defs = <Widget>[];
 
                             /* Añade el título y la etimología como cabeceras */
-                            defs.add (
-                                Padding (
+                            defs.add(
+                                Padding(
                                     padding: const EdgeInsets.all (5),
-                                    child: Text ("${e.title}")
+                                    child: Text("...")
                                 )
                             );
-                            defs.add (
-                                Container (
-                                    /* Evita que se quede centrado, sino que se muestra
+                            defs.add(
+                                Container(
+                                  /* Evita que se quede centrado, sino que se muestra
                                     al principio de la línea */
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric (
-                                            vertical: 5,
-                                            horizontal: 10
+                                        vertical: 5,
+                                        horizontal: 10
                                     ),
-                                    child: Text (
+                                    child: Text(
                                         "${e.etim}",
                                         textAlign: TextAlign.start,
-                                        style: TextStyle (fontStyle: FontStyle.italic)
+                                        style: TextStyle(
+                                            fontStyle: FontStyle.italic)
                                     )
                                 )
                             );
@@ -470,56 +473,56 @@ class DefinitionState extends State<Definition> {
                             /* Añade todas las definiciones pertenecientes a esta
                                entrada */
                             for (Definic d in e.definiciones) {
+                              switch (d.clase) {
+                                case ClaseAcepc.manual:
+                                case ClaseAcepc.normal:
+                                  Acepc acepc = (d as Acepc);
+                                  defs.add(
+                                      this._createAcepc(acepc, ctx)
+                                  );
+                                  break;
 
-                                switch (d.clase) {
+                                case ClaseAcepc.frase_hecha:
+                                  Expr expr = (d as Expr);
+                                  defs.add(
+                                      this._createExpr(expr, ctx)
+                                  );
+                                  break;
 
-                                    case ClaseAcepc.manual:
-                                    case ClaseAcepc.normal:
-                                        Acepc acepc = (d as Acepc);
-                                        defs.add (
-                                            this._createAcepc (acepc, ctx)
-                                        );
-                                        break;
+                                case ClaseAcepc.enlace:
+                                  Acepc acepc = (d as Acepc);
+                                  defs.add(
+                                      this._createLink(acepc, ctx)
+                                  );
 
-                                    case ClaseAcepc.frase_hecha:
-                                        Expr expr = (d as Expr);
-                                        defs.add (
-                                            this._createExpr (expr, ctx)
-                                        );
-                                        break;
+                                  break;
 
-                                    case ClaseAcepc.enlace:
-                                        Acepc acepc = (d as Acepc);
-                                        defs.add (
-                                            this._createLink (acepc, ctx)
-                                        );
-
-                                        break;
-
-                                    default:
-                                        defs.add (
-                                            Card (
-                                                color: Theme.of (ctx).highlightColor,
-                                                margin: const EdgeInsets.all (5.0),
-                                                child: Text ("-> ${d.toString ()}\n")
-                                            )
-                                       );
-                                }
-
+                                default:
+                                  defs.add(
+                                      Card(
+                                          color: Theme
+                                              .of(ctx)
+                                              .highlightColor,
+                                          margin: const EdgeInsets.all (5.0),
+                                          child: Text("-> ${d.toString()}\n")
+                                      )
+                                  );
+                              }
                             }
 
-                            defs.add (Divider ());
-                            Container dictEntry = Container (
+                            defs.add(Divider());
+                            Container dictEntry = Container(
 //                                color: Theme.of (ctx).highlightColor,
                                 margin: const EdgeInsets.all (5.0),
-                                child: Column (children: defs)
+                                child: Column(children: defs)
                             );
 
-                            children.add (dictEntry);
+                            children.add(dictEntry);
+                          }
                         }
 
                         /* Si se trata de un verbo, añade su cnjugación al final */
-                        if (result.conjug != null) {
+                        if (!isDef && result.conjug != null) {
 
                             children.add (this._createConjug (result.conjug, ctx));
                         }
@@ -638,22 +641,51 @@ class DefinitionState extends State<Definition> {
             _searchTerm = args ["searchTerm"];
         }
 
-        return Scaffold (
-            appBar: SearchBar (),
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              bottom: TabBar(
+                tabs: [
+                  Tab(
+                      icon: Icon(Icons.assignment),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text("Definición".i18n),
+                      ),
+                  ),
+                  Tab(
+                      icon: Icon(Icons.school),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text("Conjugación".i18n),
+                      ),
+                  )
+                ],
+              ),
+              title: Text(_searchTerm),
+            ),
             /* Se usa drawer o endDrawer en función de la configuración */
             drawer: utils.settingsIsEndDrawer ()? null : DrawerContent (),
             endDrawer: utils.settingsIsEndDrawer ()? DrawerContent () : null,
-            body: Container (
-                child: Center (
-                    child: ListView (
-                        children: _getEntries (def)
-                    )
+            body: TabBarView(
+              children: [
+                Container(
+                  child: ListView(
+                      children: _getEntries (def, true)
+                  ),
+                ),
+                Container(
+                  child: ListView(
+                      children: _getEntries (def, false)
+                  ),
                 )
+              ],
             ),
-            floatingActionButton: UnicornDialer (
-                orientation: UnicornOrientation.VERTICAL,
-                parentButton: Icon (Icons.dehaze),
-                childButtons: <UnicornButton>[
+              floatingActionButton: UnicornDialer (
+                  orientation: UnicornOrientation.VERTICAL,
+                  parentButton: Icon (Icons.dehaze),
+                  childButtons: <UnicornButton>[
                     UnicornButton (
                         hasLabel: true,
                         labelText: "Volver al inicio".i18n,
@@ -669,7 +701,7 @@ class DefinitionState extends State<Definition> {
                     UnicornButton (
                         hasLabel: true,
                         labelText: (_saved?
-                            "Quitar de 'palabras guardadas'"
+                        "Quitar de 'palabras guardadas'"
                             : "Añadir a 'palabras guardadas'".i18n
                         ),
                         currentButton: FloatingActionButton (
@@ -677,13 +709,14 @@ class DefinitionState extends State<Definition> {
                             mini: true,
                             child: Icon (
                                 _saved? Icons.favorite
-                                        : Icons.favorite_border
+                                    : Icons.favorite_border
                             ),
                             onPressed: () => this._changeSaved (def)
                         )
                     ),
-                ]
-            )
+                  ]
+              )
+          ),
         );
     }
 }

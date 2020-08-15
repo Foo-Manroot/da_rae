@@ -1,3 +1,4 @@
+import 'package:da_rae/widgets/SlideMenu.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -57,7 +58,7 @@ class HomePageState extends State<HomePage> {
     }
 
     /// Redirecciona a [Definition] para mostrar la definición
-    Future<void> _sowHistoryEntry (BuildContext ctx, String searchTerm) async {
+    Future<void> _showHistoryEntry (BuildContext ctx, String searchTerm) async {
 
         widget._log.fine ("Showing history entry: $searchTerm");
 
@@ -211,53 +212,52 @@ class HomePageState extends State<HomePage> {
 
                             /* Simplemente es un texto con la palabra guardada. La
                             definición se cargará sólo si se pincha en ella */
-                            Widget item = Card (
-                                child: Column (
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                        ListTile (
-                                            leading: Icon (Icons.book),
-                                            title: Text (
-                                                searchTerm.capitalize (),
-                                                style: Theme.of (ctx).textTheme.headline5
-                                            ),
-                                            subtitle: Text (
-                                                DateTime.fromMillisecondsSinceEpoch (
-                                                    timestamp
-                                                ).toString ()
-                                            )
-                                        ),
-                                        ButtonBar (
-                                            children: <Widget>[
-                                                /* Botón para ver la definición */
-                                                FlatButton (
-                                                    child: Text (
-                                                        "Ver definición"
-                                                            .i18n
-                                                            .toUpperCase ()
-                                                    ),
-                                                    onPressed: () => _sowHistoryEntry (
-                                                        ctx,
-                                                        searchTerm
-                                                    )
-                                                ),
-                                                /* Botón para eliminar de la BDD */
-                                                FlatButton (
-                                                    child: Text (
-                                                        "Eliminar"
-                                                            .i18n
-                                                            .toUpperCase ()
-                                                    ),
-                                                    onPressed: () => _deleteHistoryItem (
-                                                        ctx,
-                                                        searchTerm
-                                                    )
-                                                )
-                                            ],
-                                            buttonTextTheme: ButtonTextTheme.accent
-                                        )
-                                    ]
-                                )
+
+                            Widget item = SlideMenu(
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                ),
+                                elevation: 10,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                     ListTile(
+                                       leading: Icon (Icons.book),
+                                       title: Text(
+                                           searchTerm.capitalize(),
+                                           style: Theme.of(ctx).textTheme.headline5),
+                                       subtitle: Text(
+                                           DateTime.fromMillisecondsSinceEpoch(timestamp).toString()
+                                       ),
+                                     ),
+                                  ],
+                                ),
+                              ),
+                              menuItems: <Widget>[
+                                new Container(
+                                  height: 72,
+                                  color: Colors.red,
+                                  child: new IconButton(
+                                    icon: new Icon(Icons.delete),
+                                    onPressed: () => _deleteHistoryItem (
+                                        ctx,
+                                        searchTerm
+                                    ),
+                                  ),
+                                ),
+                                new Container(
+                                  height: 80,
+                                  color: Colors.blueAccent,
+                                  child: new IconButton(
+                                    icon: new Icon(Icons.info),
+                                    onPressed: () => _showHistoryEntry (
+                                        ctx,
+                                        searchTerm
+                                    ),
+                                  ),
+                                ),
+                              ],
                             );
 
                             children.add (item);
@@ -333,6 +333,5 @@ class HomePageState extends State<HomePage> {
             )
         )
     );
-
 }
 
