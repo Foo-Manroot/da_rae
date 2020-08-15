@@ -1,4 +1,3 @@
-import 'package:da_rae/widgets/SlideMenu.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
